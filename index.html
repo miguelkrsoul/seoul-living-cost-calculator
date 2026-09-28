@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KR Custo Real - Vida em Seul</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui}
+body{background:#0a0a0f;color:#fff;min-height:100vh;padding:20px}
+.container{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.2fr .8fr;gap:20px}
+@media(max-width:900px){.container{grid-template-columns:1fr}}
+.card{background:#15151f;border:1px solid #26263a;border-radius:16px;padding:20px}
+h1{font-size:28px;margin-bottom:6px}
+.sub{color:#9aa0b8;margin-bottom:20px}
+.label{font-size:12px;letter-spacing:1px;color:#8b8fa8;margin-bottom:8px;display:block}
+.input-cambio{width:100%;background:#0f0f17;border:1px solid #2a2a40;color:#fff;padding:12px;border-radius:10px;font-size:18px;outline:none}
+.input-cambio:focus{border-color:#a78bfa}
+.row{display:flex;gap:12px;margin-top:16px}
+.opt{flex:1;background:#0f0f17;border:1px solid #2a2a40;border-radius:12px;padding:14px;cursor:pointer;transition:.2s}
+.opt.active{border-color:#a78bfa;background:#1a162f}
+.opt small{color:#9aa0b8;display:block;margin-top:4px}
+.slider{width:100%;margin:10px 0}
+.total-box{background:linear-gradient(135deg,#ede9fe,#fce7f3);color:#111;border-radius:20px;padding:20px;position:sticky;top:20px}
+.total-won{font-size:36px;font-weight:800;color:#111}
+.total-brl{font-size:28px;font-weight:800;background:#111;color:#fff;padding:10px 14px;border-radius:10px;margin-top:10px;display:inline-block}
+.item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #ddd2;color:#333;font-size:14px}
+</style>
+</head>
+<body>
+<h1>Quanto custa VIVER em Seul? 🇰🇷🇧🇷</h1>
+<p class="sub">Simule seu mês em REAIS - moradia, 라면, 치킨, transporte</p>
+
+<div class="container">
+<div>
+<div class="card">
+<span class="label">TAXA DE CÂMBIO - KRW → BRL</span>
+<input id="cambio" type="text" inputmode="decimal" value="0.0040" placeholder="0,0040" class="input-cambio">
+<small style="color:#6b7280;margin-top:6px;display:block">Padrão: R$ 0,0040 = 1 won. Se digitar errado volta pro padrão automaticamente.</small>
+
+<div class="row" style="margin-top:20px">
+<div style="flex:1">
+<span class="label">DURAÇÃO</span>
+<input id="dias" type="range" min="7" max="90" value="30" class="slider">
+<div><span id="diasLabel">30 dias</span> - <small id="mesLabel">1,0 mês</small></div>
+</div>
+</div>
+
+<div style="margin-top:20px">
+<span class="label">MORADIA - 주거 (30 dias)</span>
+<div class="row">
+<div class="opt" data-moradia="450000" onclick="setMoradia(this)"><b>Goshiwon</b><small>고시원 - 4-6m² - R$ 1.800/mês<br>450.000 won/mês</small></div>
+<div class="opt" data-moradia="700000" onclick="setMoradia(this)"><b>Um quarto</b><small>원룸 - Hongdae<br>700.000 won/mês</small></div>
+<div class="opt active" data-moradia="350000" onclick="setMoradia(this)"><b>Apê dividido</b><small>쉐어하우스 - share house<br>350.000 won/mês</small></div>
+</div>
+</div>
+
+<div style="margin-top:20px">
+<span class="label">ALIMENTAÇÃO - 식비</span>
+<div class="row">
+<div class="opt active" data-food="400000" onclick="setFood(this)"><b>Misto</b><small>Cozinhar + fora - 400k</small></div>
+<div class="opt" data-food="250000" onclick="setFood(this)"><b>Cozinhar</b><small>250k/mês</small></div>
+<div class="opt" data-food="700000" onclick="setFood(this)"><b>Fora todo dia</b><small>700k - 치킨, 라면</small></div>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="total-box">
+<span class="label" style="color:#555">TOTAL ESTIMADO - <span id="diasTop">30 DIAS</span></span>
+<div style="margin-top:8px"><small style="color:#666">EM WON</small></div>
+<div class="total-won" id="totalWon">950.000</div>
+<div class="total-brl" id="totalBrl">R$ 3.800,00</div>
+<div style="margin-top:12px;font-size:12px;color:#444">Taxa usada: <span id="taxaUsada">0.0040</span> - sem IOF, sem spread</div>
+
+<div style="margin-top:20px">
+<div class="item"><span>Moradia</span><span id="detMoradia">350.000 won</span></div>
+<div class="item"><span>Alimentação</span><span id="detFood">400.000 won</span></div>
+<div class="item"><span>Transporte T-money</span><span>70.000 won</span></div>
+<div class="item"><span>Chip 4G</span><span>50.000 won</span></div>
+<div class="item"><span>Seguro/outros</span><span>80.000 won</span></div>
+</div>
+
+<div style="margin-top:16px;background:#111;color:#fff;border-radius:12px;padding:12px;font-size:12px">
+💡 <b>Dica:</b> Apê dividido economiza 50% vs one-room. Mercado no fim do dia tem 라면 e kimbap com 30% off.
+</div>
+
+</div>
+</div>
+
+<script>
+let moradiaVal = 350000;
+let foodVal = 400000;
+const extras = 70000+50000+80000;
+
+function getCambio(){
+  const el = document.getElementById('cambio');
+  let v = el.value.replace(',','.').trim();
+  if(v.startsWith('0') && !v.startsWith('0.') && v.length>1 && !v.startsWith('0,')){
+    if(/^0\d/.test(v)){ v = v.replace(/^0+/, ''); if(v==='') v='0'; el.value=v; }
+  }
+  let n = parseFloat(v);
+  if(isNaN(n) || n<=0 || n>0.1){ n=0.0040; }
+  return n;
+}
+
+function setMoradia(el){
+  document.querySelectorAll('[data-moradia]').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  moradiaVal = parseInt(el.dataset.moradia);
+  calc();
+}
+function setFood(el){
+  document.querySelectorAll('[data-food]').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  foodVal = parseInt(el.dataset.food);
+  calc();
+}
+
+function calc(){
+  const cambio = getCambio();
+  const dias = parseInt(document.getElementById('dias').value);
+  const meses = dias/30;
+  
+  document.getElementById('diasLabel').innerText = dias+' dias';
+  document.getElementById('diasTop').innerText = dias+' DIAS';
+  document.getElementById('mesLabel').innerText = meses.toFixed(1)+' mês';
+  document.getElementById('taxaUsada').innerText = cambio.toFixed(4);
+
+  let totalWonMes = moradiaVal + foodVal + extras;
+  let totalWon = Math.round(totalWonMes * meses);
+  
+  document.getElementById('detMoradia').innerText = Math.round(moradiaVal*meses).toLocaleString('pt-BR')+' won';
+  document.getElementById('detFood').innerText = Math.round(foodVal*meses).toLocaleString('pt-BR')+' won';
+
+  document.getElementById('totalWon').innerText = totalWon.toLocaleString('pt-BR');
+  let totalBrl = totalWon * cambio;
+  document.getElementById('totalBrl').innerText = 'R$ '+totalBrl.toLocaleString('pt-BR',{minimumFractionDigits:2});
+}
+
+document.getElementById('cambio').addEventListener('focus', function(){ this.select(); });
+document.getElementById('cambio').addEventListener('input', calc);
+document.getElementById('cambio').addEventListener('blur', function(){
+  let c = getCambio();
+  this.value = c.toFixed(4).replace('.',',');
+  calc();
+});
+document.getElementById('dias').addEventListener('input', calc);
+
+calc();
+</script>
+</body>
+</html>
